@@ -17,48 +17,34 @@ void read(string filename);
 void linearSearch();
 
 void prepBinarySearch();
-bool binarySearch();
+bool binarySearch(string word,int min, int max);
 
 string reverseWord(string nStr);
 
 void addEmord(string word);
+bool checkEmord(string word);
 
 void displayEmords();
 
 //global var's
 string dictionary[400000];
-string emord[5];
+string emord[200000];
 int ctr = 0;
 int emordCtr = 0;
 
 
 int main(int argc, char *argv[]) {
 
-    /**
-     * TODO
-     * get start time
-     * read from file
-     * add file contents into array
-     * print size of array
-     * get first 5 emordnilap's
-     * get end time
-     * display difference between start and end time
-     */
-
     auto startTime = std::chrono::system_clock::now();
-
-//read in dictionary.txt to dictionary[]
     try {
         read(argv[1]);
     } catch (string err) {
         cerr << err << endl;
     }
-
     cout<<"Number of words in dictionary: "<<ctr<<endl;
 
-   // prepBinarySearch();
+    prepBinarySearch();
 
-    linearSearch();
     displayEmords();
 
     auto endTime = std::chrono::system_clock::now();
@@ -105,6 +91,20 @@ void linearSearch() {
     }
 }
 
+
+
+void prepBinarySearch(){
+    for(int i=0;i<ctr;i++){
+        if(checkEmord(dictionary[i])){
+            continue;
+        }
+
+        if(binarySearch(reverseWord(dictionary[i]),0,ctr-1)){
+            addEmord(dictionary[i]);
+        }
+    }
+}
+
 /**Called as a recursive function to avoid loops
  * returns bool based on if an emord is found
  * terminating condition is when min and max are equal
@@ -118,17 +118,19 @@ bool binarySearch(string word,int min, int max){
 
     if(word == dictionary[mid]) {
         return true;
-    }else if(min == max){
+    }else if(min >= max){
         return false;
-    }else if(word > dictionary[mid]){
-        binarySearch(word,min,mid);
     }else if(word < dictionary[mid]){
-        binarySearch(word,mid,max);
+        return binarySearch(word,min,mid-1);
+    }else if(word > dictionary[mid]){
+        return binarySearch(word,mid+1,max);
     }else{
         cerr<<">No condition met in binary search"<<endl;
     }
 
 }
+
+
 
 
 
@@ -146,10 +148,36 @@ void addEmord(string word) {
     emordCtr++;
 }
 
+/**
+ * the same word will never be tested twice to we check the
+ * reversed version to see if its emord is contained in the array
+ * @param word
+ * @return
+ */
+bool checkEmord(string word) {
+    word = reverseWord(word);
+    for(int i=0;i<emordCtr;i++){
+        if(word==emord[i]){
+            return true;
+        }
+    }
+    return false;
+}
+
 void displayEmords() {
-    cout<<"First 5 emordnilap words:"<<endl;
-    for(int i=0;i<5;i++){
+    cout<<"First 10 emordnilap words:"<<endl;
+    for(int i=0;i<10;i++){
         cout<<emord[i]<<" : "<<reverseWord(emord[i])<<endl;
     }
+
+    int max=0;
+    int loc;
+    for(int i = 0;i<emordCtr;i++){
+        if(emord[i].length() >max){
+            max = emord[i].length();
+            loc = i;
+        }
+    }
+    cout<<"largest emord: "<<emord[loc]<<endl;
 }
 
