@@ -16,7 +16,8 @@ void read(string filename);
 
 void linearSearch();
 
-void binarySearch();
+void prepBinarySearch();
+bool binarySearch();
 
 string reverseWord(string nStr);
 
@@ -54,6 +55,8 @@ int main(int argc, char *argv[]) {
     }
 
     cout<<"Number of words in dictionary: "<<ctr<<endl;
+
+   // prepBinarySearch();
 
     linearSearch();
     displayEmords();
@@ -102,15 +105,39 @@ void linearSearch() {
     }
 }
 
-void binarySearch(){
+/**Called as a recursive function to avoid loops
+ * returns bool based on if an emord is found
+ * terminating condition is when min and max are equal
+ *      if its not that exact value an emord wont be found
+ * @param word      parsed in reverse so reverse method isnt called repeatedly
+ * @param min
+ * @param max
+ */
+bool binarySearch(string word,int min, int max){
+    int mid = (min + max)/2;
 
+    if(word == dictionary[mid]) {
+        return true;
+    }else if(min == max){
+        return false;
+    }else if(word > dictionary[mid]){
+        binarySearch(word,min,mid);
+    }else if(word < dictionary[mid]){
+        binarySearch(word,mid,max);
+    }else{
+        cerr<<">No condition met in binary search"<<endl;
+    }
 
 }
 
+
+
 //normal string and reverse string
 string reverseWord(string nStr) {
-    string rStr;
-    rStr.assign(nStr.rbegin(), nStr.rend());
+    string rStr="";
+    for(int i = nStr.length()-1;i>=0;i--){
+        rStr += nStr.at(i);
+    }
     return rStr;
 }
 
