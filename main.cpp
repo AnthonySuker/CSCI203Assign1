@@ -13,12 +13,11 @@ using namespace std;
 
 //declarations
 void readDictionary();
-void spellCheck();
+void readSpellCheck();
 
 //Searching algorithms
-void linearSearch();
+bool linearSearch(string * array,string word,int size);
 void prepBinarySearch();
-bool binarySearch(string word,int min, int max);
 bool binarySearch(string * array,string word,int min,int max);
 
 //word processing
@@ -27,20 +26,26 @@ string cleanseWord(string str);
 
 //Boiler plate functions
 void addEmord(string word);
-bool checkEmord(string word);
 void displayEmords();
+void findDefinedUnique();
 
 //global var's
 string dictionary[400000];
-string sampleWords[500];
 string emord[200000];
+string spellCheck[300];
+string uniqueDefined[300];
+
 int ctr = 0;
 int emordCtr = 0;
+int spCtr = 0;
+int spTotal = 0;
+int uniqueCtr =0;
 
 
 int main(int argc, char *argv[]) {
 
     auto startTime = std::chrono::system_clock::now();
+    //part 2
     try {
         readDictionary();
     } catch (string err) {
@@ -49,19 +54,25 @@ int main(int argc, char *argv[]) {
     cout<<"Number of words in dictionary: "<<ctr<<endl;
 
     prepBinarySearch();
-
     displayEmords();
 
+    //part 3
+    cout<<endl<<"3. SPELL CHECK"<<endl;
+    try {
+        readSpellCheck();
+    } catch (string err) {
+        cerr << err << endl;
+    }
+
+    findDefinedUnique();
+    cout<<"Total of words from sample.txt: "<<spTotal<<endl;
+    cout<<"Number of unique words from sample.txt: "<<spCtr<<endl;
+    cout<<"Number of defined unique words from sample.txt : "<<uniqueCtr<<endl;
+
     auto endTime = std::chrono::system_clock::now();
-
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime-startTime);
-
     cout<<"Total run time (seconds): "<<duration.count()<<endl;
-
-
     return 0;
-
-
 }
 
 //region Read functions
@@ -86,7 +97,7 @@ void readDictionary() {
     }
 }
 
-void spellCheck(){
+void readSpellCheck(){
     string filename = "sample.txt";
     ifstream in;
     string line = "";
@@ -97,30 +108,37 @@ void spellCheck(){
     } else {
         cout << filename << "> READ GOOD!" << endl;
     }
+
     //prime data to avoid duplicate entries at the EOF
     in >> line;
     while (!in.eof()) {
-        dictionary[ctr] = line;
-        ctr++;
+        line = cleanseWord(line);
+        if(!linearSearch(spellCheck,line,spCtr)){
+            spellCheck[spCtr]=line;
+            spCtr++;
+        }
+
         in >> line;
     }
 }
+
+
+
+
 //endregion
 
 
 
 //region Searches
 
-void linearSearch() {
-    for (int x = 0; x < ctr; x++) {
-        if (emordCtr == 5)return;
-        for (int y = 0; y < ctr; y++) {
-            if (dictionary[x] == reverseWord(dictionary[y])) {
-                addEmord(dictionary[x]);
-                break;
-            }
-        }
+bool linearSearch(string * array,string word,int size) {
+    if(word.size()==0) return true;
+    //increases the total valid words found only if the string is > 0
+    spTotal++;
+    for (int x = 0; x < size; x++) {
+        if(array[x]==word) return true;
     }
+    return false;
 }
 
 
@@ -152,10 +170,9 @@ bool binarySearch(string * array,string word,int min,int max){
 
 void prepBinarySearch(){
     for(int i=0;i<ctr;i++){
-        if(checkEmord(dictionary[i])){
+        if(binarySearch(emord,reverseWord(dictionary[i]),0,emordCtr-1)){
             continue;
         }
-
         if(binarySearch(dictionary,reverseWord(dictionary[i]),0,ctr-1)){
             addEmord(dictionary[i]);
         }
@@ -180,14 +197,19 @@ string cleanseWord(string str){
 
     int length = str.length();
     for(int i=0;i<length;i++){
-        if((str[i]<'a')||str[i]>'Z'){
+        if(!((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z'))){
+//            cout<<str[i]<<endl;
             str.erase(i);
             length--;
+            i--;
         }
     }
     for(int i=0;i<str.length();i++){
-        tolower(str[i]);
+        if(str[i] >= 'A' && str[i] <= 'Z'){
+            str[i] +=32;
+        }
     }
+    cout<<str<<endl;
     return str;
 }
 //endregion
@@ -197,22 +219,6 @@ string cleanseWord(string str){
 void addEmord(string word) {
     emord[emordCtr] = word;
     emordCtr++;
-}
-
-/**
- * the same word will never be tested twice to we check the
- * reversed version to see if its emord is contained in the array
- * @param word
- * @return
- */
-bool checkEmord(string word) {
-    word = reverseWord(word);
-    for(int i=0;i<emordCtr;i++){
-        if(word==emord[i]){
-            return true;
-        }
-    }
-    return false;
 }
 
 void displayEmords() {
@@ -232,3 +238,11 @@ void displayEmords() {
     cout<<"largest emord: "<<emord[loc]<<endl;
 }
 
+void findDefinedUnique(){
+    for(int i=0;i<spCtr;i++){
+        if(!binarySearch(dictionary,spellCheck[i],0,ctr)){
+            uniqueDefined[uniqueCtr] = spellCheck[i];
+            uniqueCtr++;
+        }
+    }
+}
