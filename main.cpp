@@ -12,22 +12,27 @@ Assignment: 1
 using namespace std;
 
 //declarations
-void read(string filename);
+void readDictionary();
+void spellCheck();
 
+//Searching algorithms
 void linearSearch();
-
 void prepBinarySearch();
 bool binarySearch(string word,int min, int max);
+bool binarySearch(string * array,string word,int min,int max);
 
+//word processing
 string reverseWord(string nStr);
+string cleanseWord(string str);
 
+//Boiler plate functions
 void addEmord(string word);
 bool checkEmord(string word);
-
 void displayEmords();
 
 //global var's
 string dictionary[400000];
+string sampleWords[500];
 string emord[200000];
 int ctr = 0;
 int emordCtr = 0;
@@ -37,7 +42,7 @@ int main(int argc, char *argv[]) {
 
     auto startTime = std::chrono::system_clock::now();
     try {
-        read(argv[1]);
+        readDictionary();
     } catch (string err) {
         cerr << err << endl;
     }
@@ -59,7 +64,10 @@ int main(int argc, char *argv[]) {
 
 }
 
-void read(string filename) {
+//region Read functions
+
+void readDictionary() {
+    string filename = "dictionary.txt";
     ifstream in;
     string line = "";
     in.open(filename);
@@ -76,8 +84,32 @@ void read(string filename) {
         ctr++;
         in >> line;
     }
-
 }
+
+void spellCheck(){
+    string filename = "sample.txt";
+    ifstream in;
+    string line = "";
+    in.open(filename);
+    if (!in.good()) {
+        string err = "> ERROR OPENING FILE\n> FILE NAME: " + filename;
+        throw err;
+    } else {
+        cout << filename << "> READ GOOD!" << endl;
+    }
+    //prime data to avoid duplicate entries at the EOF
+    in >> line;
+    while (!in.eof()) {
+        dictionary[ctr] = line;
+        ctr++;
+        in >> line;
+    }
+}
+//endregion
+
+
+
+//region Searches
 
 void linearSearch() {
     for (int x = 0; x < ctr; x++) {
@@ -92,19 +124,6 @@ void linearSearch() {
 }
 
 
-
-void prepBinarySearch(){
-    for(int i=0;i<ctr;i++){
-        if(checkEmord(dictionary[i])){
-            continue;
-        }
-
-        if(binarySearch(reverseWord(dictionary[i]),0,ctr-1)){
-            addEmord(dictionary[i]);
-        }
-    }
-}
-
 /**Called as a recursive function to avoid loops
  * returns bool based on if an emord is found
  * terminating condition is when min and max are equal
@@ -113,26 +132,40 @@ void prepBinarySearch(){
  * @param min
  * @param max
  */
-bool binarySearch(string word,int min, int max){
+
+bool binarySearch(string * array,string word,int min,int max){
     int mid = (min + max)/2;
 
-    if(word == dictionary[mid]) {
+    if(word == array[mid]) {
         return true;
     }else if(min >= max){
         return false;
-    }else if(word < dictionary[mid]){
-        return binarySearch(word,min,mid-1);
-    }else if(word > dictionary[mid]){
-        return binarySearch(word,mid+1,max);
+    }else if(word < array[mid]){
+        return binarySearch(array,word,min,mid-1);
+    }else if(word > array[mid]){
+        return binarySearch(array,word,mid+1,max);
     }else{
         cerr<<">No condition met in binary search"<<endl;
     }
-
 }
 
 
+void prepBinarySearch(){
+    for(int i=0;i<ctr;i++){
+        if(checkEmord(dictionary[i])){
+            continue;
+        }
+
+        if(binarySearch(dictionary,reverseWord(dictionary[i]),0,ctr-1)){
+            addEmord(dictionary[i]);
+        }
+    }
+}
+//endregion
 
 
+
+//region String manipulation
 
 //normal string and reverse string
 string reverseWord(string nStr) {
@@ -142,6 +175,24 @@ string reverseWord(string nStr) {
     }
     return rStr;
 }
+
+string cleanseWord(string str){
+
+    int length = str.length();
+    for(int i=0;i<length;i++){
+        if((str[i]<'a')||str[i]>'Z'){
+            str.erase(i);
+            length--;
+        }
+    }
+    for(int i=0;i<str.length();i++){
+        tolower(str[i]);
+    }
+    return str;
+}
+//endregion
+
+
 
 void addEmord(string word) {
     emord[emordCtr] = word;
