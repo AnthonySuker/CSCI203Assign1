@@ -194,23 +194,30 @@ string reverseWord(string nStr) {
 }
 
 string cleanseWord(string str){
-
+    string returnStr="";
     int length = str.length();
+//    for(int i=0;i<length;i++){
+//        if(!((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z'))){
+////            cout<<str[i]<<endl;
+//            str.erase(i);
+//            length--;
+//            i--;
+//        }
+//    }
+
     for(int i=0;i<length;i++){
-        if(!((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z'))){
-//            cout<<str[i]<<endl;
-            str.erase(i);
-            length--;
-            i--;
+        if(((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z'))){
+            returnStr += str[i];
         }
     }
+
     for(int i=0;i<str.length();i++){
-        if(str[i] >= 'A' && str[i] <= 'Z'){
-            str[i] +=32;
+        if(returnStr[i] >= 'A' && returnStr[i] <= 'Z'){
+            returnStr[i] +=32;
         }
     }
-    cout<<str<<endl;
-    return str;
+    cout<<returnStr<<endl;
+    return returnStr;
 }
 //endregion
 
